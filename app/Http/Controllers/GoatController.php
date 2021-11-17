@@ -20,7 +20,7 @@ use Illuminate\Support\Facades\Storage;
 
 class GoatController extends Controller
 {
-    public function index(){    
+    public function index(){
 
         $user = Auth::user()->id;
         $data['goats'] = DB::table('goats')
@@ -68,13 +68,24 @@ class GoatController extends Controller
             'motherGene' => 'required',
 
         ]);
-            $path = $request->file('image')->store('public/goatimages');
+            if($request->hasFile('image')){
+               $filenameWithExt = $request->file('image')->getClientOriginalName();
+               $filename = pathinfo($filenameWithExt, PATHINFO_FILENAME);
+               $extension = $request->file('image')->getClientOriginalExtension();
+               $fileNameToStore = $filename.'_'.time().'.'.$extension;
+               $path = $request->file('image')->storeAs('public/image' , $fileNameToStore);
+            }else{
+                $fileNameToStore = 'noimage.jpg';
+            }
+
+            //$path = $request->file('image')->store('public/goatimages');
             $goat = new Goat;
             $goat -> goatId = $request->goatId;
             $goat -> goatName = $request->goatName;
             $goat -> sex = $request->sex;
             $goat -> gene = $request->gene;
-            $goat -> image = $path;
+            //$goat -> image = $path;
+            $goat -> image = $fileNameToStore;
             $goat -> colour = $request->colour;
             $goat -> dateOfBirth = $request->dateOfBirth;
             $goat -> weightOfBirth = $request->weightOfBirth;
@@ -102,7 +113,7 @@ class GoatController extends Controller
         ->get();
 
         $health = DB::table('goats')
-        ->select('health_histories.*')        
+        ->select('health_histories.*')
         ->join('health_histories', 'goats.goatId', '=', 'health_histories.goat_id')
         ->where('goats.goatId', '=', [$goatId])
         ->where('health_histories.goat_id', '=', [$goatId])
@@ -117,7 +128,7 @@ class GoatController extends Controller
 
         $breeding = DB::table('goats')
         ->select('mother_breeding_histories.*')
-        ->join('mother_breeding_histories', 'goats.goatId', '=', 'mother_breeding_histories.goat_id')  
+        ->join('mother_breeding_histories', 'goats.goatId', '=', 'mother_breeding_histories.goat_id')
         ->where('goats.goatId', '=', [$goatId])
         ->where('mother_breeding_histories.goat_id', '=', [$goatId])
         ->get();
@@ -131,7 +142,7 @@ class GoatController extends Controller
 
         $weight = DB::table('goats')
         ->select('weight_updates.*')
-        ->join('weight_updates', 'goats.goatId', '=', 'weight_updates.goat_id')    
+        ->join('weight_updates', 'goats.goatId', '=', 'weight_updates.goat_id')
         ->where('goats.goatId', '=', [$goatId])
         ->where('weight_updates.goat_id', '=', [$goatId])
         ->get();
@@ -235,7 +246,7 @@ class GoatController extends Controller
             'goat_id' => 'required'
         ]);
 
-            $health = Goat::find($goatId);     
+            $health = Goat::find($goatId);
             $health = new HealthHistory();
             $health -> attitude = $request->attitude;
             $health -> dateOfHealth = $request->dateOfHealth;
@@ -266,7 +277,7 @@ class GoatController extends Controller
             'goat_id' => 'required'
         ]);
 
-        $weight = Goat::find($goatId); 
+        $weight = Goat::find($goatId);
         $weight = new WeightUpdate();
         $weight -> timePeriod = $request->timePeriod;
         $weight -> weight = $request->weight;
@@ -282,7 +293,7 @@ class GoatController extends Controller
     }
 
     public function medical($goatId){
-        
+
         $goat = Goat::find($goatId);
         $dis = Disease::select('diseases.*')->orderBy('id')->get();
 
@@ -317,7 +328,7 @@ class GoatController extends Controller
     }
 
     public function vaccination($goatId){
-        
+
         $goat = Goat::find($goatId);
         $vac = Vaccine::orderBy('id')->get();
 
@@ -326,7 +337,7 @@ class GoatController extends Controller
     }
 
     public function vaccineUpdate(Request $request, $goatId){
-            
+
                 $request->validate([
                     'typeOfVaccine' => 'required',
                     'dateOfVaccine' => 'required',
@@ -335,14 +346,14 @@ class GoatController extends Controller
                 ]);
 
                 $vaccine = Goat::find($goatId);
-                $vaccine = new VaccinationHistory();                
+                $vaccine = new VaccinationHistory();
                 $vaccine -> typeOfVaccine = $request->typeOfVaccine;
                 $vaccine -> dateOfVaccine = $request->dateOfVaccine;
                 $vaccine -> vaccine_staff = $request->vaccine_staff;
                 $vaccine -> goat_id = $request->goat_id;
 
                 $vaccine -> save();
-            
+
             if ($vaccine) {
                 return back()->with('success', 'You have been successfully');
             } else {
@@ -350,7 +361,7 @@ class GoatController extends Controller
             }
 
     }
-    
+
     public function breed($goatId){
 
         $goat = Goat::find($goatId);
@@ -422,5 +433,5 @@ class GoatController extends Controller
 
         return response()->download('storage/'.$imageName, $imageName.'.'.$type, $headers)->deleteFileAfterSend();
     }
-    
+
 }

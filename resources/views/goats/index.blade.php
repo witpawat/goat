@@ -35,7 +35,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700&display=swap" rel="stylesheet">
 
 
-<style>    
+<style>
     .header{
         padding: 10px;
         margin-top: 20px;
@@ -116,11 +116,11 @@
             <tr>
                 <td><input type="checkbox" name="ids[]" class="selectbox" value="{{$goat->goatId}}"> </td>
                 <td>{{ $goat->goatId }}</td>
-                <td><img src="{{ Storage::url($goat->image) }}" height="75" width="75" alt="" /></td>
+                <td><img src="/storage/image/{{ $goat->image }}" height="75" width="75" alt="" /></td>
                 <td>{{ $goat->goatName }}</td>
                 <td>{{ $goat->gene }}</td>
                 <td>
-                        <a class="btn btn-info" href="{{ route('goats.show',$goat->goatId) }}">แสดงข้อมูล</a>        
+                        <a class="btn btn-info" href="{{ route('goats.show',$goat->goatId) }}">แสดงข้อมูล</a>
                         <a class="btn btn-primary" href="{{ route('goats.edit',$goat->goatId) }}">เเก้ไขข้อมูล</a>
                         <button formaction="{{ route('goats.destroy',$goat->goatId) }}" type="submit" class="btn btn-danger">ลบข้อมูล</button>
                         <br><a class="btn btn-warning" href="{{ route('goats.updateHome',$goat->goatId) }}">อัปเดตข้อมูลอื่นๆ</a>
